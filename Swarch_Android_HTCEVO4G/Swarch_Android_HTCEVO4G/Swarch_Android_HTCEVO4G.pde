@@ -4,8 +4,8 @@
 // ICS 168 Swarch on Android
 
 //Networking Library
-import oscP5.*;
-import netP5.*;
+//import oscP5.*;
+//import netP5.*;
 
 //Import additional processing function into android
 import apwidgets.*;
@@ -35,7 +35,8 @@ void setup()
   //Anthony - HTC EVO 4g (1280 x 720)
   //John - Transformer tf101 (1280 x 800)
   //Thomas - Nexus 4 (1920 x 1080)
-  size(800, 480);
+  size(displayWidth, displayHeight);
+ 
 
   orientation(LANDSCAPE);
 
@@ -67,7 +68,7 @@ void draw()
   if(enteringInfo == true)
   {
     login = loadImage("login.png");
-    background(login);
+    image(login, 0, 0);
   }
   else
   {
