@@ -22,9 +22,7 @@ PImage login;
 ArrayList playerInfo;
 
 //global variables
-String name = "";
-String password = "";
-boolean enteringInfo = true;
+boolean enteringInfo;
 
 //Shape
 PShape square;
@@ -33,12 +31,12 @@ PShape food;
 //movement
 float x, y;
 
-//food
-int numFood = 0;
-boolean maxFood = false;
+//Variable for food
+int numFood;
+boolean maxFood;
 PShape[] myFood; 
-int[] xCoord;
-  int[] yCoord;
+float[] xCoord;
+float[] yCoord;
 
 void setup()
 {
@@ -64,11 +62,24 @@ void setup()
   passwordField.setImeOptions(EditorInfo.IME_ACTION_DONE);
   passwordField.setCloseImeOnDone(true);
   
-  //initalize the arraylist.
+  //initalize the arraylist to store playerInfo
   playerInfo = new ArrayList();
+  
+  //initalize array to hold Shapes and their x, y coord
   myFood = new PShape[4];
-  xCoord = new int[4];
-  yCoord = new int[4];
+  xCoord = new float[4];
+  yCoord = new float[4];
+  
+  //initalize maxFood
+  maxFood = false;
+  
+  //initalize enteringInfo
+  enteringInfo = true;
+  
+  //start a player at a random location
+   x = random(15, displayWidth - 70);
+   y = random(15, displayHeight - 60);
+  
 }
 
 void draw()
@@ -84,23 +95,34 @@ void draw()
     //after user info is entered
     //draw black background for game
      background(0);
+     
      //displays username
      displayUsername(); 
      
+     //Create the Player Cube
      playerUnit();
      
-      if(maxFood == false)
+     //draw till maximum food is reached
+     if(maxFood == false)
      {
-       generateFood();
-     
-
+        generateFood();
      }
-   
-    for(int i = 0; i < 4; ++i)
-       {
-         shape(myFood[i], xCoord[i], yCoord[i]);
-       
-       }
+     
+     //place food around the board
+     for(int i = 0; i < 4; ++i)
+     {
+        shape(myFood[i], xCoord[i], yCoord[i]);
+     }
+     
+     //unit collison.
+     unitCollison();
+     
+     //This is for testing collison and stuff remove
+     //after we are finsh testing the game.
+     text(displayWidth , 500, 500);
+     text(displayHeight, 500 , 550);
+     text(x, 500, 600);
+     text(y, 500, 650);
   }
 }
 
@@ -115,7 +137,7 @@ void onClickWidget(APWidget widget)
   }
 }
 
-//display User name in top left corner
+//display User name  and score in top left and right corners
 void displayUsername()
 {
   fill(255);
@@ -124,40 +146,71 @@ void displayUsername()
   text("Score: ", displayWidth - 200, 30);
 }
 
+//Player touchscreen control.
+//Still buggy with bottom y and right side x collison
 void mouseDragged()
 {
-  if(x > -25 && x < displayWidth - 25 && y > 5 && y < displayHeight)
+  if((x > 15 && x < displayWidth - 70) && (y > 15 && y < displayHeight - 60))
   {
     x = mouseX;
     y = mouseY;
   }
   else
   {
-    x = displayWidth/2;
-    y = displayHeight/2;
+    x = random(15, displayWidth - 70);
+    y = random(15, displayHeight - 60);
+    
+    //Reset the player cube to it's original size when dying
+    square = createShape(RECT, 0,0, 50, 50);
   }
-  
 }
+
+//creates the player square unit
 void playerUnit()
 {
   square = createShape(RECT, 0,0, 50, 50);
   square.setFill(color(255,255,0));
   shape(square, x, y);
-  
 }
 
+//unit collison
+//This semi works at the moment, but i need someone to go over this to make sure.
+//Also need to remove pellet when collison happens.
+boolean unitCollison()
+{
+  for(int i = 0; i < 4; ++i)
+  {
+    if(x > xCoord[i] - 10 || x < xCoord[i] + 20)
+    {
+      return true;
+    }
+    else if(y > yCoord[i] - 10 || y < yCoord[i] + 20)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  return false;
+}
+
+//Creates the food pellets for the players to eat
 void generateFood()
 {
   for(int i = 0; i < 4; ++i)
   {
    food = createShape(RECT, 0, 0, 10, 10);
    food.setFill(color(255,0,0));
-   xCoord[i] = (int)random(0,displayWidth);
-   yCoord[i] = (int)random(0, displayHeight);
+   xCoord[i] = random(15,displayWidth - 70);
+   yCoord[i] = random(15, displayHeight - 60);
    myFood[i] = food;
    numFood++;
    if (numFood == 4)
+   {
      maxFood = true;
+   }
   }
 }
 
