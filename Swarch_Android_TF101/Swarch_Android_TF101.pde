@@ -26,13 +26,27 @@ String name = "";
 String password = "";
 boolean enteringInfo = true;
 
+//Shape
+PShape square;
+PShape food;
+
+//movement
+float x, y;
+
+//food
+int numFood = 0;
+boolean maxFood = false;
+PShape[] myFood; 
+int[] xCoord;
+  int[] yCoord;
 
 void setup()
 {
 
   //set resolution and orientation of device
-  size(displayWidth, displayHeight); 
+  size(displayWidth, displayHeight, P2D); 
   orientation(LANDSCAPE);
+  frameRate(60);
 
   //initalize the container
   widgetContainer = new APWidgetContainer(this); //create new container for widgets
@@ -43,7 +57,6 @@ void setup()
   nameField.setInputType(InputType.TYPE_CLASS_TEXT); //Set the input type to text
   nameField.setImeOptions(EditorInfo.IME_ACTION_NEXT); //Enables a next button, shifts to next field
 
-
   //create a password text box
   passwordField = new APEditText(displayWidth/2 - 125, displayHeight/2 - 40, 290, 45); //create a textfield from x- and y-pos., width and height
   widgetContainer.addWidget(passwordField);
@@ -53,8 +66,9 @@ void setup()
   
   //initalize the arraylist.
   playerInfo = new ArrayList();
-  
-  
+  myFood = new PShape[4];
+  xCoord = new int[4];
+  yCoord = new int[4];
 }
 
 void draw()
@@ -70,7 +84,23 @@ void draw()
     //after user info is entered
     //draw black background for game
      background(0);
-     displayUsername(); //displays username
+     //displays username
+     displayUsername(); 
+     
+     playerUnit();
+     
+      if(maxFood == false)
+     {
+       generateFood();
+     
+
+     }
+   
+    for(int i = 0; i < 4; ++i)
+       {
+         shape(myFood[i], xCoord[i], yCoord[i]);
+       
+       }
   }
 }
 
@@ -92,5 +122,42 @@ void displayUsername()
   textSize(25);
   text("User: " + nameField.getText(), 10, 30);
   text("Score: ", displayWidth - 200, 30);
+}
+
+void mouseDragged()
+{
+  if(x > -25 && x < displayWidth - 25 && y > 5 && y < displayHeight)
+  {
+    x = mouseX;
+    y = mouseY;
+  }
+  else
+  {
+    x = displayWidth/2;
+    y = displayHeight/2;
+  }
+  
+}
+void playerUnit()
+{
+  square = createShape(RECT, 0,0, 50, 50);
+  square.setFill(color(255,255,0));
+  shape(square, x, y);
+  
+}
+
+void generateFood()
+{
+  for(int i = 0; i < 4; ++i)
+  {
+   food = createShape(RECT, 0, 0, 10, 10);
+   food.setFill(color(255,0,0));
+   xCoord[i] = (int)random(0,displayWidth);
+   yCoord[i] = (int)random(0, displayHeight);
+   myFood[i] = food;
+   numFood++;
+   if (numFood == 4)
+     maxFood = true;
+  }
 }
 
