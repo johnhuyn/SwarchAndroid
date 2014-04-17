@@ -3,10 +3,15 @@ Milestone 1: COMPLETED
 Milestone 2: In Progress
 
 -Convert Swarch to Proccessing (Inprogress)
-!!!! The remaining game function such as growing, slowing, and resetting mostly have been tested but requires Collison to work properly before adding back in!!!!
-!!!! Collison has been implemented, but there are some issues with it needs to be fixed!!!!
+
+**The remaining game function such as growing, slowing, and resetting mostly have been tested but requires Collison to work properly before adding back in**
+
+**Collison has been implemented, but there are some issues with it needs to be fixed**
+
 **Player movement is in (could use a bit smoother actions)**
+
 **Player Cube has been implemented**
+
 **Food Pellets are working**
 
 
