@@ -3,6 +3,14 @@
 // Anthony So
 // ICS 168 Swarch on Android
 
+// accelerometer 
+import android.content.Context;               
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
+
 //Networking Library
 import oscP5.*;
 import netP5.*;
@@ -37,6 +45,7 @@ boolean maxFood;
 PShape[] myFood; 
 float[] xCoord;
 float[] yCoord;
+Player playerOne;
 
 void setup()
 {
@@ -79,7 +88,7 @@ void setup()
   //start a player at a random location
    x = random(15, displayWidth - 70);
    y = random(15, displayHeight - 60);
-  
+  playerOne = new Player();
 }
 
 void draw()
@@ -100,7 +109,8 @@ void draw()
      displayUsername(); 
      
      //Create the Player Cube
-     playerUnit();
+    // playerUnit();
+     playerOne.run();
      
      //draw till maximum food is reached
      if(maxFood == false)
@@ -123,6 +133,9 @@ void draw()
      text(displayHeight, 500 , 550);
      text(x, 500, 600);
      text(y, 500, 650);
+     text(playerOne.x, 500 , 400);
+     text(playerOne.y, 500 , 450);
+
   }
 }
 
@@ -146,6 +159,7 @@ void displayUsername()
   text("Score: ", displayWidth - 200, 30);
 }
 
+/*
 //Player touchscreen control.
 //Still buggy with bottom y and right side x collison
 void mouseDragged()
@@ -172,6 +186,7 @@ void playerUnit()
   square.setFill(color(255,255,0));
   shape(square, x, y);
 }
+*/
 
 //unit collison
 //This semi works at the moment, but i need someone to go over this to make sure.
