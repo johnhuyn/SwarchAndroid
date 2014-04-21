@@ -23,8 +23,8 @@ public class Player
   {
     if(accelData != null)
     {
-      xVelo = accelData[0];
-      yVelo = accelData[1];
+      xVelo = accelData[1];
+      yVelo = accelData[0];
     }
     
       if(abs(xVelo) > abs(yVelo))
