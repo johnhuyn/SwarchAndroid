@@ -3,6 +3,14 @@
 // Anthony So
 // ICS 168 Swarch on Android
 
+// accelerometer 
+import android.content.Context;               
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
+
 //Networking Library
 import oscP5.*;
 import netP5.*;
@@ -22,42 +30,73 @@ PImage login;
 ArrayList playerInfo;
 
 //global variables
-String name = "";
-String password = "";
-boolean enteringInfo = true;
+boolean enteringInfo;
 int wScale1, hScale1,  hScale2;
+
+//Shape
+PShape square;
+PShape food;
+
+//movement
+float x, y;
+
+//Variable for food
+int numFood;
+boolean maxFood;
+PShape[] myFood; 
+float[] xCoord;
+float[] yCoord;
+Player playerOne;
+int pOneCenter;
 
 void setup()
 {
 
   //set resolution and orientation of device
-  size(displayWidth, displayHeight); 
-  wScale1 = ((displayWidth/2) - 125)*(1+(displayWidth/1920));
-  hScale1 = ((displayHeight/2) - 120)*(1+(displayHeight/1080));
-  hScale2 = ((displayHeight/2) - 40)*(1+(displayHeight/1080));
-
+  size(displayWidth, displayHeight, P2D); 
   orientation(LANDSCAPE);
+  wScale1 = ((displayWidth/2) - 85)*(1+(displayWidth/1920));
+  hScale1 = ((displayHeight/2) - 85)*(1+(displayHeight/1080));
+  hScale2 = ((displayHeight/2) - 35)*(1+(displayHeight/1080));
+
+  frameRate(60);
 
   //initalize the container
   widgetContainer = new APWidgetContainer(this); //create new container for widgets
 
   //create a name textBox
-  nameField = new APEditText(wScale1, hScale1, 150, 50); //create a textfield from x- and y-pos., width and height
+  nameField = new APEditText(wScale1, hScale1, 195, 55); //create a textfield from x- and y-pos., width and height
   widgetContainer.addWidget(nameField);
   nameField.setInputType(InputType.TYPE_CLASS_TEXT); //Set the input type to text
   nameField.setImeOptions(EditorInfo.IME_ACTION_NEXT); //Enables a next button, shifts to next field
 
-
   //create a password text box
-  passwordField = new APEditText(wScale1, hScale2, 150, 50); //create a textfield from x- and y-pos., width and height
+  passwordField = new APEditText(wScale1, hScale2, 195, 55); //create a textfield from x- and y-pos., width and height
   widgetContainer.addWidget(passwordField);
   passwordField.setInputType(InputType.TYPE_CLASS_TEXT); //set input type to text
   passwordField.setImeOptions(EditorInfo.IME_ACTION_DONE);
   passwordField.setCloseImeOnDone(true);
   
-  //initalize the arraylist.
+  //initalize the arraylist to store playerInfo
   playerInfo = new ArrayList();
   
+  //initalize array to hold Shapes and their x, y coord
+  myFood = new PShape[4];
+  xCoord = new float[4];
+  yCoord = new float[4];
+  
+  //initalize maxFood
+  maxFood = false;
+  
+  //initalize enteringInfo
+  enteringInfo = true;
+  
+  //start a player at a random location
+   x = random(15, displayWidth - 70);
+   y = random(15, displayHeight - 60);
+   
+  playerOne = new Player();
+  pOneCenter = (int)(25 + playerOne.size*10)/2;
   
 }
 
@@ -74,10 +113,41 @@ void draw()
     //after user info is entered
     //draw black background for game
      background(0);
+     
+     //displays username
+     displayUsername(); 
+     
+     //unit collison.
+     unitCollison();
+     //Create the Player Cube
+    // playerUnit();
+     playerOne.run();
+     
+     //draw till maximum food is reached
+     if(maxFood == false)
+     {
+        generateFood();
+     }
+     
+     //place food around the board
+     for(int i = 0; i < 4; ++i)
+     {
+        shape(myFood[i], xCoord[i], yCoord[i]);
+     }
+     
+     //unit collison.
+     unitCollison();
+     
+     //This is for testing collison and stuff remove
+     //after we are finsh testing the game.
+    // text(displayWidth , 500, 500);
+    // text(displayHeight, 500 , 550);
+    // text(x, 500, 600);
+     //text(y, 500, 650);
+    // text(playerOne.x, 500 , 400);
+    // text(playerOne.y, 500 , 450);
+
   }
-  
-  displayUsername(); //displays username
-  
 }
 
 //When setCloseImeOnDone is finished it will call this which will close down the login screen
@@ -91,12 +161,55 @@ void onClickWidget(APWidget widget)
   }
 }
 
-//display User name in top left corner
+//display User name  and score in top left and right corners
 void displayUsername()
 {
   fill(255);
   textSize(25);
   text("User: " + nameField.getText(), 10, 30);
-  text("Password: " + passwordField.getText(), 10, 70); //testing purposes only
+  text("Score: " + playerOne.size, displayWidth - 200, 30);
+}
+
+void unitCollison()
+{
+  pOneCenter = (int)(25 + playerOne.size*10)/2; // makes sure the bounds are updated before checking for collision.
+  
+  for(int i = 0; i < 4; ++i)
+  {
+    if((playerOne.x  > xCoord[i]/2 - pOneCenter - 2 && playerOne.x < xCoord[i]/2 + pOneCenter + 2) 
+        && (playerOne.y  > yCoord[i]/2 - pOneCenter - 2 && playerOne.y  < yCoord[i]/2 + pOneCenter + 2))
+    {
+       food = createShape(RECT, 0, 0, 10, 10);
+       food.setFill(color(255,0,0));
+       xCoord[i] = random(15, displayWidth - 70);
+       yCoord[i] = random(15, displayHeight - 60);
+       myFood[i] = food;
+       print("hit! " + " xCoord[i]: " + xCoord[i] + " yCoord[i]: "+ yCoord[i]);
+       
+       playerOne.size = playerOne.size + 1;
+
+
+    }
+  }
+}
+
+
+//Creates the food pellets for the players to eat
+void generateFood()
+{
+  for(int i = 0; i < 4; ++i)
+  {
+   food = createShape(RECT, 0, 0, 10, 10);
+   food.setFill(color(255,0,0));
+   xCoord[i] = random(15, displayWidth - 70);
+   yCoord[i] = random(15, displayHeight - 60);
+   myFood[i] = food;
+   numFood++;
+   print("i: " + i + " xCoord[i]: " + xCoord[i] + " yCoord[i]: "+ yCoord[i] + "\n");
+   if (numFood == 4)
+   {
+     maxFood = true;
+   }
+  }
 }
 
