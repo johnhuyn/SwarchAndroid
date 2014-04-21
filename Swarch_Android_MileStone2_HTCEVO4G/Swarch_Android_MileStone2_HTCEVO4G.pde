@@ -31,6 +31,7 @@ ArrayList playerInfo;
 
 //global variables
 boolean enteringInfo;
+int wScale1, hScale1,  hScale2;
 
 //Shape
 PShape square;
@@ -54,19 +55,22 @@ void setup()
   //set resolution and orientation of device
   size(displayWidth, displayHeight, P2D); 
   orientation(LANDSCAPE);
+   wScale1 = ((displayWidth/2) - 85)*(1+(displayWidth/1920));
+  hScale1 = ((displayHeight/2) - 85)*(1+(displayHeight/1080));
+  hScale2 = ((displayHeight/2) - 35)*(1+(displayHeight/1080));
   frameRate(60);
 
   //initalize the container
   widgetContainer = new APWidgetContainer(this); //create new container for widgets
 
   //create a name textBox
-  nameField = new APEditText(displayWidth/2 - 125, displayHeight/2 - 120, 290, 45); //create a textfield from x- and y-pos., width and height
+  nameField = new APEditText(wScale1, hScale1, 195, 55); //create a textfield from x- and y-pos., width and height
   widgetContainer.addWidget(nameField);
   nameField.setInputType(InputType.TYPE_CLASS_TEXT); //Set the input type to text
   nameField.setImeOptions(EditorInfo.IME_ACTION_NEXT); //Enables a next button, shifts to next field
 
   //create a password text box
-  passwordField = new APEditText(displayWidth/2 - 125, displayHeight/2 - 40, 290, 45); //create a textfield from x- and y-pos., width and height
+  passwordField = new APEditText(wScale1, hScale2, 195, 55); //create a textfield from x- and y-pos., width and height
   widgetContainer.addWidget(passwordField);
   passwordField.setInputType(InputType.TYPE_CLASS_TEXT); //set input type to text
   passwordField.setImeOptions(EditorInfo.IME_ACTION_DONE);
@@ -91,7 +95,7 @@ void setup()
    y = random(15, displayHeight - 60);
    
   playerOne = new Player();
-  pOneCenter = (int)(25 + playerOne.size*10)/2;
+  pOneCenter = (int)(25 + playerOne.size*10)/3;
   
 }
 
@@ -135,12 +139,12 @@ void draw()
      
      //This is for testing collison and stuff remove
      //after we are finsh testing the game.
-    // text(displayWidth , 500, 500);
-    // text(displayHeight, 500 , 550);
-    // text(x, 500, 600);
-     //text(y, 500, 650);
-    // text(playerOne.x, 500 , 400);
-    // text(playerOne.y, 500 , 450);
+     text(displayWidth , 500, 500);
+     text(displayHeight, 500 , 550);
+     text(x, 500, 600);
+     text(y, 500, 650);
+     text(playerOne.x, 500 , 400);
+     text(playerOne.y, 500 , 450);
 
   }
 }
@@ -167,7 +171,7 @@ void displayUsername()
 
 void unitCollison()
 {
-  pOneCenter = (int)(25 + playerOne.size*10)/2; // makes sure the bounds are updated before checking for collision.
+  pOneCenter = (int)(25 + playerOne.size*10)/3; // makes sure the bounds are updated before checking for collision.
   
   for(int i = 0; i < 4; ++i)
   {

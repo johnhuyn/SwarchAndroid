@@ -26,43 +26,59 @@ public class Player
       xVelo = accelData[1];
       yVelo = accelData[0];
     }
-    
-      if(abs(xVelo) > abs(yVelo))
-      {
-        if(size > 1)
-        {
-          if(xVelo < 1)
-             x -= 1 * (1 - size/20);                                                                                                                                                                                             
-          else
-             x += 1 * (1 - size/20);
-        }
-        else
-        {
-          if(xVelo < 1)
-             x -= 1 * (1 - size/20);
-          else
-             x += 1 * (1 - size/20);
-        }
-      }
-      else
+   
+       if(abs(xVelo) > abs(yVelo))
        {
-         if(size > 1)
+         if(size > 0)
+         {
+           if(xVelo < 1)
+           {
+             x -= 1 * (1 - size/20);
+           }
+           else
+           {
+             x+= 1 * (1 - size/20);
+           }
+         }
+         else
+         {
+           if(xVelo < 1)
+           {
+             x -= 1;
+           }
+           else
+           {
+             x += 1;
+           }
+         }
+       }
+       else
+       {
+         if(size > 0)
          {
            if(yVelo < 1)
-            y += 1 * (size/10);
-            else
-            y -=1 * (size/10);
+           {
+             y -= 1 * (1 - size/20);
+           }
+           else
+           {
+             y += 1 * (1 - size/20);
+           }
          }
          else
          {
            if(yVelo < 1)
-            y += 1;
-            else
-            y -=1;
+           {
+             y -= 1;
+           }
+           else
+           {
+             y += 1;
+           }
          }
-           
        }
-  }
+         
+}
   
   void display()
   {
@@ -79,22 +95,26 @@ public class Player
    {
     if (x - (10) > displayHeight - 140) 
     {
-        x = 70;
+        x = random(25, displayWidth - 70);
+        y = random(25, displayHeight - 60);
         size = 0;
     }
     else if (x - 10 < 0)
     {
-          x = displayHeight - 140;
-          size = 0;
+        x = random(25, displayWidth - 70);
+        y = random(25, displayHeight - 60);
+        size = 0;
     }
     else if (y + (10)> displayWidth/3 - 60)
     {
-        y = 60;
+        x = random(25, displayWidth - 70);
+        y = random(25, displayHeight - 60);
         size = 0;
     }
     else if (y - 10 < 0)
     {
-        y = displayWidth/3 - 60;
+        x = random(25, displayWidth - 70);
+        y = random(25, displayHeight - 60);
         size = 0;
     }
   }
