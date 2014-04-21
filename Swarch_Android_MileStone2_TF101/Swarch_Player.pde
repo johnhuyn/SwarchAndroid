@@ -95,22 +95,26 @@ public class Player
    {
     if (x - (10) > displayHeight - 140) 
     {
-        x = 70;
+        x = random(25, displayWidth - 70);
+        y = random(25, displayHeight - 60);
         size = 0;
     }
     else if (x - 10 < 0)
     {
-          x = displayHeight - 140;
-          size = 0;
+        x = random(25, displayWidth - 70);
+        y = random(25, displayHeight - 60);
+        size = 0;
     }
     else if (y + (10)> displayWidth/3 - 60)
     {
-        y = 60;
+        x = random(25, displayWidth - 70);
+        y = random(25, displayHeight - 60);
         size = 0;
     }
     else if (y - 10 < 0)
     {
-        y = displayWidth/3 - 60;
+        x = random(25, displayWidth - 70);
+        y = random(25, displayHeight - 60);
         size = 0;
     }
   }
