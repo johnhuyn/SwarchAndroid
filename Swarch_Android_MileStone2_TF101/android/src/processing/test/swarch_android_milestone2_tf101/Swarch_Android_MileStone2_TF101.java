@@ -1,24 +1,55 @@
+package processing.test.swarch_android_milestone2_tf101;
+
+import processing.core.*; 
+import processing.data.*; 
+import processing.event.*; 
+import processing.opengl.*; 
+
+import android.content.Context; 
+import android.hardware.Sensor; 
+import android.hardware.SensorEvent; 
+import android.hardware.SensorEventListener; 
+import android.hardware.SensorManager; 
+import oscP5.*; 
+import netP5.*; 
+import apwidgets.*; 
+import android.text.InputType; 
+import android.view.inputmethod.EditorInfo; 
+
+import apwidgets.*; 
+
+import java.util.HashMap; 
+import java.util.ArrayList; 
+import java.io.File; 
+import java.io.BufferedReader; 
+import java.io.PrintWriter; 
+import java.io.InputStream; 
+import java.io.OutputStream; 
+import java.io.IOException; 
+
+public class Swarch_Android_MileStone2_TF101 extends PApplet {
+
 // John Nguyen 
 // Thomas Truong
 // Anthony So
 // ICS 168 Swarch on Android
 
 // accelerometer 
-import android.content.Context;               
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+               
+
+
+
+
 
 
 //Networking Library
-import oscP5.*;
-import netP5.*;
+
+
 
 //Import additional processing function into android
-import apwidgets.*;
-import android.text.InputType;
-import android.view.inputmethod.EditorInfo;
+
+
+
 
 APWidgetContainer widgetContainer; 
 APEditText nameField, passwordField;
@@ -47,11 +78,11 @@ float[] xCoord;
 float[] yCoord;
 Player playerOne;
 int pOneCenter;
-void setup()
+public void setup()
 {
 
   //set resolution and orientation of device
-  size(displayWidth, displayHeight, P2D); 
+  
   orientation(LANDSCAPE);
   frameRate(60);
 
@@ -94,7 +125,7 @@ void setup()
   
 }
 
-void draw()
+public void draw()
 {
   //Load Starting Screen
   if(enteringInfo == true)
@@ -145,7 +176,7 @@ void draw()
 }
 
 //When setCloseImeOnDone is finished it will call this which will close down the login screen
-void onClickWidget(APWidget widget)
+public void onClickWidget(APWidget widget)
 {
   if(widget == passwordField)
   {
@@ -156,7 +187,7 @@ void onClickWidget(APWidget widget)
 }
 
 //display User name  and score in top left and right corners
-void displayUsername()
+public void displayUsername()
 {
   fill(255);
   textSize(25);
@@ -164,7 +195,7 @@ void displayUsername()
   text("Score: " + playerOne.size, displayWidth - 200, 30);
 }
 
-void unitCollison()
+public void unitCollison()
 {
   pOneCenter = (int)(25 + playerOne.size*10)/3; // makes sure the bounds are updated before checking for collision.
   
@@ -189,7 +220,7 @@ void unitCollison()
 
 
 //Creates the food pellets for the players to eat
-void generateFood()
+public void generateFood()
 {
   for(int i = 0; i < 4; ++i)
   {
@@ -207,3 +238,150 @@ void generateFood()
   }
 }
 
+
+   SensorManager sensorManager;       // keep track of sensor
+  SensorListener sensorListener;     // special class for noting sensor changes
+  Sensor accelerometer;              // Sensor object for accelerometer
+  float[] accelData;                 // x,y,z sensor data
+  //1196
+  //768
+public class Player
+{
+  
+  float x, y, xVelo, yVelo, size;
+   
+  public Player()
+  {
+      y = displayWidth/2;
+      x = displayHeight/2;
+      xVelo = 0;
+      yVelo = 0;
+      size = 0;
+  }
+  
+  public void move()
+  {
+    if(accelData != null)
+    {
+      xVelo = accelData[0];
+      yVelo = accelData[1];
+    }
+    
+      if(abs(xVelo) > abs(yVelo))
+      {
+        if(size > 0)
+        {
+          if(xVelo < 1)
+             x -= 1 * (1 - size/20);                                                                                                                                                                                             
+          else
+             x += 1 * (1 - size/20);
+        }
+        else
+        {
+          if(xVelo < 1)
+             x -= 1;
+          else
+             x += 1;
+        }
+      }
+      else
+       {
+         if(size > 0)
+         {
+           if(yVelo < 1)
+            y += 1 * (size/10);
+            else
+            y -=1 * (size/10);
+         }
+         else
+         {
+           if(yVelo < 1)
+            y += 1;
+            else
+            y -=1;
+         }
+           
+       }
+  }
+  
+  public void display()
+  {
+    square = createShape(RECT, x, y, 25 + size*10, 25 + size*10);
+    square.setFill(color(255,255,0));
+    shapeMode(CENTER);
+    shape(square, x, y);
+  }
+  
+//    For Testing purposes:
+//       player is able to move to edge; landing on the other side of the screen
+//     -** Need to change later so that player dies; when hits edge.
+   public void edges()
+   {
+    if (x - (10) > displayHeight - 140) 
+    {
+        x = 70;
+        size = 0;
+    }
+    else if (x - 10 < 0)
+    {
+          x = displayHeight - 140;
+          size = 0;
+    }
+    else if (y + (10)> displayWidth/3 - 60)
+    {
+        y = 60;
+        size = 0;
+    }
+    else if (y - 10 < 0)
+    {
+        y = displayWidth/3 - 60;
+        size = 0;
+    }
+  }
+  
+  public void run()
+  {
+    edges();
+    move();
+    display();
+  }
+}
+
+  public void onResume()
+  {
+    super.onResume();
+    sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+    sensorListener = new SensorListener();
+    accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);  // see top comments for speed options
+  }
+  
+  public void onPause() 
+  {
+    sensorManager.unregisterListener(sensorListener);
+    super.onPause();
+  }
+
+class SensorListener implements SensorEventListener 
+{
+  
+  public void onSensorChanged(SensorEvent event) 
+  {
+    if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) 
+    {
+      accelData = event.values;
+    }
+  }
+  
+  public void onAccuracyChanged(Sensor sensor, int accuracy) 
+  {
+    // nothing here, but this method is required for the code to work...
+  }
+  
+}
+
+
+  public int sketchWidth() { return displayWidth; }
+  public int sketchHeight() { return displayHeight; }
+  public String sketchRenderer() { return P2D; }
+}

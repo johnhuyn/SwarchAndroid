@@ -26,43 +26,59 @@ public class Player
       xVelo = accelData[0];
       yVelo = accelData[1];
     }
-    
-      if(abs(xVelo) > abs(yVelo))
-      {
-        if(size > 1)
-        {
-          if(xVelo < 1)
-             x -= 1 * (1 - size/20);                                                                                                                                                                                             
-          else
-             x += 1 * (1 - size/20);
-        }
-        else
-        {
-          if(xVelo < 1)
-             x -= 1 * (1 - size/20);
-          else
-             x += 1 * (1 - size/20);
-        }
-      }
-      else
+   
+       if(abs(xVelo) > abs(yVelo))
        {
-         if(size > 1)
+         if(size > 0)
+         {
+           if(xVelo < 1)
+           {
+             x -= 1 * (1 - size/20);
+           }
+           else
+           {
+             x+= 1 * (1 - size/20);
+           }
+         }
+         else
+         {
+           if(xVelo < 1)
+           {
+             x -= 1;
+           }
+           else
+           {
+             x += 1;
+           }
+         }
+       }
+       else
+       {
+         if(size > 0)
          {
            if(yVelo < 1)
-            y += 1 * (size/10);
-            else
-            y -=1 * (size/10);
+           {
+             y += 1 * (1 - size/20);
+           }
+           else
+           {
+             y -= 1 * (1 - size/20);
+           }
          }
          else
          {
            if(yVelo < 1)
-            y += 1;
-            else
-            y -=1;
+           {
+             y += 1;
+           }
+           else
+           {
+             y -= 1;
+           }
          }
-           
        }
-  }
+         
+}
   
   void display()
   {
