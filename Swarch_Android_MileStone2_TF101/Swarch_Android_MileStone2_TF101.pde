@@ -132,14 +132,14 @@ void draw()
      //unit collison.
      unitCollison();
      
-     //This is for testing collison and stuff remove
+     /*//This is for testing collison and stuff remove
      //after we are finsh testing the game.
      text(displayWidth , 500, 500);
      text(displayHeight, 500 , 550);
      text(x, 500, 600);
      text(y, 500, 650);
      text(playerOne.x, 500 , 400);
-     text(playerOne.y, 500 , 450);
+     text(playerOne.y, 500 , 450);*/
 
   }
 }
