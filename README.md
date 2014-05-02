@@ -1,24 +1,29 @@
 Milestone 1: COMPLETED
 
-Milestone 2: In Progress
+Milestone 2: COMPLETED
 
--Convert Swarch to Proccessing (Completed)
+Milestone 3: IN PROGRESS
 
-**Growing and speed down (Completed)**
+**What needs to be done**
 
-**Collison has been implemented and completed, but can use some clean up**
+-**Add network layer to the game to establish handshake (connection / verification of player information)**
 
-**Player movement(Completed)**
+-Needs to be able to connect and send username and password
 
-**Player Cube(Completed)**
+-Should return a message / deny connection if username and password do not match
 
-**Food Pellets(Completed)**
+-While not needed for this milestone having the server detect the client disconnecting is required for the final milestone 
 
+-**Add database to store usernames and password on server**
 
--Add a login screen that handles a username and password (Completed)
- 
- **Login screen is finished and also has a background image.**
+-Create database on the server
 
--Username should be displayed in corner of game window (Completed)
+-If a connection is attempted retrieve said username/password to check.
+
+-If player doesn't exist in database create a new player with that password
+
+-There should probably be a confirmation pop up somewhere that states this not to confused player
+
+-Lastly a true/false should be sent from server->client to switch our thing after user authentication has been approved.
 
 =============
