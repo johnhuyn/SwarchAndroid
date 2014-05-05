@@ -1,10 +1,3 @@
-/**
- * oscP5broadcastClient by andreas schlegel
- * an osc broadcast client.
- * an example for broadcast server is located in the oscP5broadcaster exmaple.
- * oscP5 website at http://www.sojamo.de/oscP5
- */
-
 import oscP5.*;
 import netP5.*;
 
@@ -44,6 +37,9 @@ void mousePressed() {
   /* add a value (an integer) to the OscMessage */
   myOscMessage.add(100);
   /* send the OscMessage to a remote location specified in myNetAddress */
+  oscP5.send(myOscMessage, myBroadcastLocation);
+    m = new OscMessage("/server/connect",new Object[0]);
+      oscP5.flush(m,myBroadcastLocation);  
 }
 
 
