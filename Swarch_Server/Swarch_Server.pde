@@ -4,18 +4,17 @@
 // ICS 168 Swarch on Android Server on Java
 
 /**
- * oscP5broadcaster by andreas schlegel
- * an osc broadcast server.
- * osc clients can connect to the server by sending a connect and
- * disconnect osc message as defined below to the server.
- * incoming messages at the server will then be broadcasted to
- * all connected clients. 
- * an example for a client is located in the oscP5broadcastClient exmaple.
- * oscP5 website at http://www.sojamo.de/oscP5
+ * Swarch Server - send and rceieves player information
  */
- 
+
 import oscP5.*;
 import netP5.*;
+
+/**
+ * SQLite DB
+ */
+
+
 
 OscP5 oscP5;
 NetAddressList myNetAddressList = new NetAddressList();
@@ -24,55 +23,79 @@ int myListeningPort = 32000;
 /* the broadcast port is the port the clients should listen for incoming messages from the server*/
 int myBroadcastPort = 12000;
 
-String myConnectPattern = "/server/connect";
+String myConnectPattern = "UserName:";
 String myDisconnectPattern = "/server/disconnect";
 
 
-void setup() {
+void setup() 
+{
+  //networking
   oscP5 = new OscP5(this, myListeningPort);
-  frameRate(25);
+  frameRate(60);
+  
+  
+  
 }
 
-void draw() {
+void draw() 
+{
   background(0);
 }
 
-void oscEvent(OscMessage theOscMessage) {
+void oscEvent(OscMessage theOscMessage)
+{
   /* check if the address pattern fits any of our patterns */
-  if (theOscMessage.addrPattern().equals(myConnectPattern)) {
+  if (theOscMessage.addrPattern().equals(myConnectPattern)) 
+  {
     connect(theOscMessage.netAddress().address());
+
+    //testing send message was successful
+    OscMessage m = new OscMessage("faaggot");
+    oscP5.send(m, myNetAddressList);
   }
-  else if (theOscMessage.addrPattern().equals(myDisconnectPattern)) {
+  else if (theOscMessage.addrPattern().equals(myDisconnectPattern)) 
+  {
     disconnect(theOscMessage.netAddress().address());
   }
   /**
    * if pattern matching was not successful, then broadcast the incoming
    * message to all addresses in the netAddresList. 
    */
-  else {
+  else 
+  {
+
     oscP5.send(theOscMessage, myNetAddressList);
   }
 }
 
 
- private void connect(String theIPaddress) {
-     if (!myNetAddressList.contains(theIPaddress, myBroadcastPort)) {
-       myNetAddressList.add(new NetAddress(theIPaddress, myBroadcastPort));
-       println("### adding "+theIPaddress+" to the list.");
-     } else {
-       println("### "+theIPaddress+" is already connected.");
-     }
-     println("### currently there are "+myNetAddressList.list().size()+" remote locations connected.");
- }
+private void connect(String theIPaddress) 
+{
+  if (!myNetAddressList.contains(theIPaddress, myBroadcastPort)) 
+  {
+    myNetAddressList.add(new NetAddress(theIPaddress, myBroadcastPort));
+    println("### adding "+theIPaddress+" to the player list.");
+  } 
+  else 
+  {
+    println("### "+theIPaddress+" is already connected.");
+  }
+  println("### currently there are "+myNetAddressList.list().size()+" remote locations connected.");
+}
 
 
 
-private void disconnect(String theIPaddress) {
-if (myNetAddressList.contains(theIPaddress, myBroadcastPort)) {
+private void disconnect(String theIPaddress) 
+{
+  if (myNetAddressList.contains(theIPaddress, myBroadcastPort)) 
+  { 
     myNetAddressList.remove(theIPaddress, myBroadcastPort);
-       println("### removing "+theIPaddress+" from the list.");
-     } else {
-       println("### "+theIPaddress+" is not connected.");
-     }
-       println("### currently there are "+myNetAddressList.list().size());
- }
+    println("### removing "+theIPaddress+" from the list.");
+  } 
+  else 
+  {
+    println("### "+theIPaddress+" is not connected.");
+  }
+  println("### currently there are "+myNetAddressList.list().size());
+}
+
