@@ -10,10 +10,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-
 //Networking Library
 import oscP5.*;
 import netP5.*;
+
+OscP5 oscP5;
+NetAddress myBroadcastLocation; 
 
 //Import additional processing function into android
 import apwidgets.*;
@@ -27,7 +29,8 @@ APEditText nameField, passwordField;
 PImage login;
 
 //Player Information
-ArrayList playerInfo;
+String userName;
+String passWord;
 
 //global variables
 boolean enteringInfo;
@@ -47,6 +50,7 @@ float[] xCoord;
 float[] yCoord;
 Player playerOne;
 int pOneCenter;
+
 void setup()
 {
 
@@ -58,7 +62,7 @@ void setup()
   //initalize the container
   widgetContainer = new APWidgetContainer(this); //create new container for widgets
 
-  //create a name textBox
+    //create a name textBox
   nameField = new APEditText(displayWidth/2 - 125, displayHeight/2 - 120, 290, 45); //create a textfield from x- and y-pos., width and height
   widgetContainer.addWidget(nameField);
   nameField.setInputType(InputType.TYPE_CLASS_TEXT); //Set the input type to text
@@ -70,85 +74,91 @@ void setup()
   passwordField.setInputType(InputType.TYPE_CLASS_TEXT); //set input type to text
   passwordField.setImeOptions(EditorInfo.IME_ACTION_DONE);
   passwordField.setCloseImeOnDone(true);
-  
-  //initalize the arraylist to store playerInfo
-  playerInfo = new ArrayList();
-  
+
+
   //initalize array to hold Shapes and their x, y coord
   myFood = new PShape[4];
   xCoord = new float[4];
   yCoord = new float[4];
-  
+
   //initalize maxFood
   maxFood = false;
-  
+
   //initalize enteringInfo
   enteringInfo = true;
-  
+
   //start a player at a random location
-   x = random(15, displayWidth - 70);
-   y = random(15, displayHeight - 60);
-   
+  x = random(15, displayWidth - 70);
+  y = random(15, displayHeight - 60);
+
   playerOne = new Player();
   pOneCenter = (int)(25 + playerOne.size*10)/3;
+
+  //Initialize network settings
+
+  //listens for incoming messages
+  oscP5 = new OscP5(this, 12000);
+
+  //send message to server
+  myBroadcastLocation = new NetAddress("192.168.1.122", 32000);
+
+  //Connect to Server on start up
+  OscMessage m3;
+  m3 = new OscMessage("Connecting...", new Object[0]);
+  oscP5.flush(m3, myBroadcastLocation);
   
+ //Initalize Playerinfo
+ userName = "";
+ passWord = "";
 }
 
 void draw()
 {
   //Load Starting Screen
-  if(enteringInfo == true)
+  if (enteringInfo == true)
   {
+
     login = loadImage("login.png");
     image(login, 0, 0, displayWidth, displayHeight);
+    
   }
   else
   {
     //after user info is entered
     //draw black background for game
-     background(0);
-     
-     //displays username
-     displayUsername(); 
-     
-     //unit collison.
-     unitCollison();
-     //Create the Player Cube
-    // playerUnit();
-     playerOne.run();
-     
-     //draw till maximum food is reached
-     if(maxFood == false)
-     {
-        generateFood();
-     }
-     
-     //place food around the board
-     for(int i = 0; i < 4; ++i)
-     {
-        shape(myFood[i], xCoord[i], yCoord[i]);
-     }
-     
-     //unit collison.
-     unitCollison();
-     
-     /*//This is for testing collison and stuff remove
-     //after we are finsh testing the game.
-     text(displayWidth , 500, 500);
-     text(displayHeight, 500 , 550);
-     text(x, 500, 600);
-     text(y, 500, 650);
-     text(playerOne.x, 500 , 400);
-     text(playerOne.y, 500 , 450);*/
+    background(0);
 
+    //displays username
+    displayUsername(); 
+
+    //unit collison.
+    unitCollison();
+    //Create the Player Cube
+    // playerUnit();
+    playerOne.run();
+
+    //draw till maximum food is reached
+    if (maxFood == false)
+    {
+      generateFood();
+    }
+
+    //place food around the board
+    for (int i = 0; i < 4; ++i)
+    {
+      shape(myFood[i], xCoord[i], yCoord[i]);
+    }
+
+    //unit collison.
+    unitCollison();
   }
 }
 
 //When setCloseImeOnDone is finished it will call this which will close down the login screen
 void onClickWidget(APWidget widget)
 {
-  if(widget == passwordField)
-  {
+  if (widget == passwordField)
+  { 
     widgetContainer.removeWidget(nameField);
     widgetContainer.removeWidget(passwordField);
     enteringInfo = false;
@@ -162,48 +172,64 @@ void displayUsername()
   textSize(25);
   text("User: " + nameField.getText(), 10, 30);
   text("Score: " + playerOne.size, displayWidth - 200, 30);
+  userName = nameField.getText();
+  passWord = passwordField.getText();
+  OscMessage m = new OscMessage(userName);
+  oscP5.send(m, myBroadcastLocation);
 }
 
 void unitCollison()
 {
   pOneCenter = (int)(25 + playerOne.size*10)/3; // makes sure the bounds are updated before checking for collision.
-  
-  for(int i = 0; i < 4; ++i)
+
+  for (int i = 0; i < 4; ++i)
   {
-    if((playerOne.x  > xCoord[i]/2 - pOneCenter - 2 && playerOne.x < xCoord[i]/2 + pOneCenter + 2) 
-        && (playerOne.y  > yCoord[i]/2 - pOneCenter - 2 && playerOne.y  < yCoord[i]/2 + pOneCenter + 2))
+    if ((playerOne.x  > xCoord[i]/2 - pOneCenter - 2 && playerOne.x < xCoord[i]/2 + pOneCenter + 2) 
+      && (playerOne.y  > yCoord[i]/2 - pOneCenter - 2 && playerOne.y  < yCoord[i]/2 + pOneCenter + 2))
     {
-       food = createShape(RECT, 0, 0, 10, 10);
-       food.setFill(color(255,0,0));
-       xCoord[i] = random(15, displayWidth - 70);
-       yCoord[i] = random(15, displayHeight - 60);
-       myFood[i] = food;
-       print("hit! " + " xCoord[i]: " + xCoord[i] + " yCoord[i]: "+ yCoord[i]);
-       
-       playerOne.size = playerOne.size + 1;
+      food = createShape(RECT, 0, 0, 10, 10);
+      food.setFill(color(255, 0, 0));
+      xCoord[i] = random(15, displayWidth - 70);
+      yCoord[i] = random(15, displayHeight - 60);
+      myFood[i] = food;
+      print("hit! " + " xCoord[i]: " + xCoord[i] + " yCoord[i]: "+ yCoord[i]);
 
-
+      playerOne.size = playerOne.size + 1;
     }
   }
 }
 
-
 //Creates the food pellets for the players to eat
 void generateFood()
 {
-  for(int i = 0; i < 4; ++i)
+  for (int i = 0; i < 4; ++i)
   {
-   food = createShape(RECT, 0, 0, 10, 10);
-   food.setFill(color(255,0,0));
-   xCoord[i] = random(15, displayWidth - 70);
-   yCoord[i] = random(15, displayHeight - 60);
-   myFood[i] = food;
-   numFood++;
-   print("i: " + i + " xCoord[i]: " + xCoord[i] + " yCoord[i]: "+ yCoord[i] + "\n");
-   if (numFood == 4)
-   {
-     maxFood = true;
-   }
+    food = createShape(RECT, 0, 0, 10, 10);
+    food.setFill(color(255, 0, 0));
+    xCoord[i] = random(15, displayWidth - 70);
+    yCoord[i] = random(15, displayHeight - 60);
+    myFood[i] = food;
+    numFood++;
+    print("i: " + i + " xCoord[i]: " + xCoord[i] + " yCoord[i]: "+ yCoord[i] + "\n");
+    if (numFood == 4)
+    {
+      maxFood = true;
+    }
   }
+}
+
+//listens for incoming messages from the server
+void oscEvent(OscMessage theOscMessage) 
+{
+  /* get and print the address pattern and the typetag of the received OscMessage */
+  println("### received an osc message with addrpattern "+theOscMessage.addrPattern());
+  // theOscMessage.print();
+  text("Msg" + theOscMessage, 10, 300);
+  
+  /*if(theOscMessage.addrPattern().equals("Connection Successful!"))
+  {
+   OscMessage m = new OscMessage(userName);
+   oscP5.send(m, myBroadcastLocation);
+  }*/
 }
 
