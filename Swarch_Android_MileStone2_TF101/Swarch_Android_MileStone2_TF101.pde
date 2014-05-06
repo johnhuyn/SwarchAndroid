@@ -3,6 +3,13 @@
 // Anthony So
 // ICS 168 Swarch on Android
 
+//encryption
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Formatter;
+
+
 // accelerometer 
 import android.content.Context;               
 import android.hardware.Sensor;
@@ -35,6 +42,7 @@ PImage login;
 //Player Information
 String userName;
 String passWord;
+String failPass;
 
 //global variables
 boolean enteringInfo;
@@ -104,19 +112,20 @@ void setup()
   //Initialize network settings
 
   //listens for incoming messages
-  oscP5 = new OscP5(this, 12000);
+  oscP5 = new OscP5(this, "169.234.112.229", 32000, OscP5.TCP);
 
   //send message to server
-  myBroadcastLocation = new NetAddress("192.168.1.122", 32000);
+  // myBroadcastLocation = new NetAddress("169.234.112.229", 32000);
 
   //Connect to Server on start up
   OscMessage m3;
   m3 = new OscMessage("Connecting...", new Object[0]);
-  oscP5.send(m3, myBroadcastLocation);
+  oscP5.send(m3);// myBroadcastLocation);
 
   //Initalize Playerinfo
   userName = "";
   passWord = "";
+  failPass = "";
 
   //init threading
   tt = new ThreadThing(this);
@@ -129,6 +138,10 @@ void draw()
   {
     login = loadImage("login.png");
     image(login, 0, 0, displayWidth, displayHeight);
+
+    fill(255);
+    textSize(25);
+    text(failPass, 10, 30);
   }
   else
   {
@@ -234,13 +247,12 @@ void oscEvent(OscMessage theOscMessage)
     println("Server msg received");
     enteringInfo = false;
   }
-  else if(theOscMessage.addrPattern().equals("Incorrect Password"))
+  else if (theOscMessage.addrPattern().equals("Incorrect Password"))
   {
-    println("Server msg for failed password");
+    failPass = "Incorrect Password";
     enteringInfo = true;
     widgetContainer.addWidget(nameField);
     widgetContainer.addWidget(passwordField);
-    
   }
 }
 
