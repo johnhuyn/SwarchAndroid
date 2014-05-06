@@ -10,19 +10,20 @@ OscP5 oscP5;
 NetAddressList myNetAddressList = new NetAddressList();
 
 //SQLite DB
+import java.sql.*;
 import de.bezier.data.sql.*;
 SQLite db;
 
 // listeningPort is the port the server is listening for incoming messages
 int myListeningPort = 32000;
 // the broadcast port is the port the clients should listen for incoming messages from the server
-int myBroadcastPort = 12000;
+//int myBroadcastPort = 12000;
 
 //Used to check messages being sent and for the event 
 // checker to identify what is going on.
 //* Use this to check message for collison, username, and etc in the future
 String myConnectPattern = "Connecting...";
-String myDisconnectPattern = "/server/disconnect";
+String myDisconnectPattern = "Disconnecting...";
 
 //Variable used to store userName/passWord sent from Client
 //Use this to insert/compare to the database
@@ -32,11 +33,9 @@ String passWord;
 
 void setup() 
 {
-  //networking
-  oscP5 = new OscP5(this, myListeningPort);
+  //networking set in tcp mode
+  oscP5 = new OscP5(this, myListeningPort, OscP5.TCP);
   frameRate(60);
-
-
 
   //Database
   db = new SQLite(this, "account.db"); //opens the account database file
@@ -46,25 +45,20 @@ void setup()
     //insert player test
     //db.query(" insert into table1 values ('anthony', '123')");
 
-    //deleting players
-    // db.query("delete from table1 where Player = 'john' AND password = '12345'");
-    // db.query("delete from table1 where Player = 'john' AND password = '1243'");
-    //db.query("delete from table1 where Player = 'john' AND password = '123'");
-    //db.query("delete from table1 where Player = 'john' AND password = '123456'");
-    //db.query("delete from table1 where Player = 'john' AND password = '1234'");
-    //db.query("delete from table1 where Player = 'mike' AND password = '1243'");
-    //db.query("delete from table1 where Player = 'thomas' AND password = '123'");
+    //deleting players example
+    //db.query("delete from table1");
 
-    //list table names?
+    //list table names
     /*db.query( "SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"" );
      
-    /*  while (db.next ())
+     while (db.next ())
      {
      println( db.getString("Name") );
      }*/
 
     //read from "table1"
     db.query( "SELECT * FROM table1" );
+    //print("Username: " + db.getString("Player") + " Password: " + db.getString("Password"));
 
     while (db.next ())
     {
@@ -90,67 +84,69 @@ void oscEvent(OscMessage theOscMessage)
     //testing send message was successful
     OscMessage m = new OscMessage("Connection Successful!");
     //This sends the above message to all clients connected.
-    oscP5.send(m, myNetAddressList);
+    oscP5.send(m, theOscMessage.tcpConnection());
   }
   //handles user registration
+  //check that if incoming message is not blank run the code inside
   else if (!theOscMessage.get(0).stringValue().equals(""))
   {
     //simple solution is to prevent duplicate entries.
+    //added unique player column
     if (db.connect())
     {
-      db.execute("INSERT into table1 values ('"+theOscMessage.get(0).stringValue()+"', '"+theOscMessage.get(1).stringValue()+"')");
-      db.query("SELECT DISTINCT PLAYER, PASSWORD FROM table1");
-      while (db.next ())
+      //Look for userName in Player
+      db.query("SELECT * FROM table1 where player = '" +theOscMessage.get(0).stringValue() +"'");
+      userName = db.getString("Player");
+      db.query("SELECT * FROM table1 where player = '" +theOscMessage.get(0).stringValue() +"' and password = '" + theOscMessage.get(1).stringValue() + "'");
+      passWord = db.getString("Password");
+      println(userName + " " + passWord);
+
+      if (userName == null) //If the message matches than it return true
       {
-        //If player doesn't exist in database yet, it will add, but wont show up unless you restart the server/app
-        if (!theOscMessage.get(0).stringValue().equals(db.getString("Player")))
-        {
-          println("Player is not in the database yet");
-          db.execute("INSERT into table1 values ('"+theOscMessage.get(0).stringValue()+"', '"+theOscMessage.get(1).stringValue()+"')");
-        }
-        else if (theOscMessage.get(0).stringValue().equals(db.getString("Player")) && theOscMessage.get(1).stringValue().equals(db.getString("Password")))
-        {
-          println("Player Exist and Password Match");
-          OscMessage m2 = new OscMessage("Authenticated");
-          oscP5.send(m2, myNetAddressList);
-        }
-        //Does not check entire string for this. Password 1234 , but old password is 12345 and it still gets approved anyways need to be fixed.
-        else if (theOscMessage.get(0).stringValue().equals(db.getString("Player")) && !theOscMessage.get(1).stringValue().equals(db.getString("Password")))
-        {
- 
-          println("Player Exist, but Password Doesn't Match");
-          OscMessage m3 = new OscMessage("Incorrect Password");
-          oscP5.send(m3, myNetAddressList);
-        }
-        else
-        {
-     
-          println("dbPlayer " + db.getString("Player") + " dbPass " + db.getString("Password"));
-          println("string(0) " + theOscMessage.get(0).stringValue() + " string(1) " + theOscMessage.get(1).stringValue());
-          print("Username: " + db.getString("Player") + " Password: " + db.getString("Password"));
-          println();
-        }
+        println("Player is not in the database yet");
+        //add player
+        db.query("INSERT into table1 values ('"+theOscMessage.get(0).stringValue()+"', '"+theOscMessage.get(1).stringValue()+"')");
+        println("addded " + theOscMessage.get(0).stringValue() + " " + theOscMessage.get(1).stringValue());
+        OscMessage m2 = new OscMessage("Authenticated");
+        oscP5.send(m2, theOscMessage.tcpConnection());
+      }
+      else if (userName != null && passWord != null)
+      {
+        println("Player Exist and Password Match");
+        //authenticate player
+        OscMessage m2 = new OscMessage("Authenticated");
+        oscP5.send(m2, theOscMessage.tcpConnection());
+      }
+      else if (userName != null && passWord == null)
+      {
+        println("Player Exist, but Password Doesn't Match");
+        //send login screen again
+        OscMessage m3 = new OscMessage("Incorrect Password");
+        oscP5.send(m3, theOscMessage.tcpConnection());
       }
     }
   }
-  //Disocnnection function
-  else if (theOscMessage.addrPattern().equals(myDisconnectPattern)) 
-  {
-    disconnect(theOscMessage.netAddress().address());
-  }
-  //if none of above match than message all clients.
-  else 
-  {
-    oscP5.send(theOscMessage, myNetAddressList);
-  }
+
+  //commented out for milestone 4
+  /*//Disocnnection function
+   else if (theOscMessage.addrPattern().equals(myDisconnectPattern)) 
+   {
+   disconnect(theOscMessage.netAddress().address());
+   }
+   //if none of above match than message all clients.
+   else 
+   {
+   oscP5.send(theOscMessage, theOscMessage.tcpConnection());
+   }*/
 }
 
 
+//connects player to server and store them in IP address list
 private void connect(String theIPaddress) 
 {
-  if (!myNetAddressList.contains(theIPaddress, myBroadcastPort)) 
+  if (!myNetAddressList.contains(theIPaddress, myListeningPort)) 
   {
-    myNetAddressList.add(new NetAddress(theIPaddress, myBroadcastPort));
+    myNetAddressList.add(new NetAddress(theIPaddress, myListeningPort));
     println("### adding "+theIPaddress+" to the player list.");
   } 
   else 
@@ -161,12 +157,12 @@ private void connect(String theIPaddress)
 }
 
 
-
+//finish implementing latter
 private void disconnect(String theIPaddress) 
 {
-  if (myNetAddressList.contains(theIPaddress, myBroadcastPort)) 
+  if (myNetAddressList.contains(theIPaddress, myListeningPort)) 
   { 
-    myNetAddressList.remove(theIPaddress, myBroadcastPort);
+    myNetAddressList.remove(theIPaddress, myListeningPort);
     println("### removing "+theIPaddress+" from the list.");
   } 
   else 
