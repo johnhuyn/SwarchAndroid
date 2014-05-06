@@ -40,33 +40,38 @@ void setup()
 
   //Database
   db = new SQLite(this, "account.db"); //opens the account database file
+
   if (db.connect())
-   {
-   //insert player test
-   //db.query(" insert into table1 values ('anthony', '123')");
-   
-   //deleting players
-   db.query("delete from table1 where Player = 'john' AND password = '000'");
-   db.query("delete from table1 where Player = 'nike39' AND password = '000'");
-   //db.query("delete from table1 where Player = 'thomas' AND password = '123'");
-   
-   //list table names?
-   db.query( "SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"" );
-   
-   while (db.next ())
-   {
-   println( db.getString("Name") );
-   }
-   
-   //read from "table1"
-   db.query( "SELECT * FROM table1" );
-   
-   while (db.next ())
-   {
-   print("Username: " + db.getString("Player") + " Password: " + db.getString("Password"));
-   println();
-   }
-   }
+  {
+    //insert player test
+    //db.query(" insert into table1 values ('anthony', '123')");
+
+    //deleting players
+    // db.query("delete from table1 where Player = 'john' AND password = '12345'");
+    // db.query("delete from table1 where Player = 'john' AND password = '1243'");
+    //db.query("delete from table1 where Player = 'john' AND password = '123'");
+    //db.query("delete from table1 where Player = 'john' AND password = '123456'");
+    //db.query("delete from table1 where Player = 'john' AND password = '1234'");
+    //db.query("delete from table1 where Player = 'mike' AND password = '1243'");
+    //db.query("delete from table1 where Player = 'thomas' AND password = '123'");
+
+    //list table names?
+    /*db.query( "SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"" );
+     
+    /*  while (db.next ())
+     {
+     println( db.getString("Name") );
+     }*/
+
+    //read from "table1"
+    db.query( "SELECT * FROM table1" );
+
+    while (db.next ())
+    {
+      print("Username: " + db.getString("Player") + " Password: " + db.getString("Password"));
+      println();
+    }
+  }
 }
 
 void draw() 
@@ -87,32 +92,57 @@ void oscEvent(OscMessage theOscMessage)
     //This sends the above message to all clients connected.
     oscP5.send(m, myNetAddressList);
   }
-  else if (theOscMessage.addrPattern() != db.getString("Player"))
+  //handles user registration
+  else if (!theOscMessage.get(0).stringValue().equals(""))
   {
-    /*if (db.connect())
+    //simple solution is to prevent duplicate entries.
+    if (db.connect())
     {
-      db.query("insert into table1 values ('" +theOscMessage.addrPattern()+"', '000')");
-      db.query( "SELECT * FROM table1" );
+      db.execute("INSERT into table1 values ('"+theOscMessage.get(0).stringValue()+"', '"+theOscMessage.get(1).stringValue()+"')");
+      db.query("SELECT DISTINCT PLAYER, PASSWORD FROM table1");
       while (db.next ())
       {
-        print("Username: " + db.getString("Player") + " Password: " + db.getString("Password"));
-        println();
+        //If player doesn't exist in database yet, it will add, but wont show up unless you restart the server/app
+        if (!theOscMessage.get(0).stringValue().equals(db.getString("Player")))
+        {
+          println("Player is not in the database yet");
+          db.execute("INSERT into table1 values ('"+theOscMessage.get(0).stringValue()+"', '"+theOscMessage.get(1).stringValue()+"')");
+        }
+        else if (theOscMessage.get(0).stringValue().equals(db.getString("Player")) && theOscMessage.get(1).stringValue().equals(db.getString("Password")))
+        {
+          println("Player Exist and Password Match");
+          OscMessage m2 = new OscMessage("Authenticated");
+          oscP5.send(m2, myNetAddressList);
+        }
+        //Does not check entire string for this. Password 1234 , but old password is 12345 and it still gets approved anyways need to be fixed.
+        else if (theOscMessage.get(0).stringValue().equals(db.getString("Player")) && !theOscMessage.get(1).stringValue().equals(db.getString("Password")))
+        {
+ 
+          println("Player Exist, but Password Doesn't Match");
+          OscMessage m3 = new OscMessage("Incorrect Password");
+          oscP5.send(m3, myNetAddressList);
+        }
+        else
+        {
+     
+          println("dbPlayer " + db.getString("Player") + " dbPass " + db.getString("Password"));
+          println("string(0) " + theOscMessage.get(0).stringValue() + " string(1) " + theOscMessage.get(1).stringValue());
+          print("Username: " + db.getString("Player") + " Password: " + db.getString("Password"));
+          println();
+        }
       }
-    }*/
+    }
   }
-  /* else if (theOscMessage.addrPattern().equals(myDisconnectPattern)) 
-   {
-   disconnect(theOscMessage.netAddress().address());
-   }
-  /**
-   * if pattern matching was not successful, then broadcast the incoming
-   * message to all addresses in the netAddresList. 
-   */
-  /*else 
-   {
-   
-   oscP5.send(theOscMessage, myNetAddressList);
-   }*/
+  //Disocnnection function
+  else if (theOscMessage.addrPattern().equals(myDisconnectPattern)) 
+  {
+    disconnect(theOscMessage.netAddress().address());
+  }
+  //if none of above match than message all clients.
+  else 
+  {
+    oscP5.send(theOscMessage, myNetAddressList);
+  }
 }
 
 
