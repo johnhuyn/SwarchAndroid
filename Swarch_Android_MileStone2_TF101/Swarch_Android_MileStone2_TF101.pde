@@ -43,6 +43,7 @@ PImage login;
 String userName;
 String passWord;
 String failPass;
+String registerSucess;
 
 //global variables
 boolean enteringInfo;
@@ -86,7 +87,7 @@ void setup()
   //create a password text box
   passwordField = new APEditText(displayWidth/2 - 125, displayHeight/2 - 40, 290, 45); //create a textfield from x- and y-pos., width and height
   widgetContainer.addWidget(passwordField);
-  passwordField.setInputType(InputType.TYPE_CLASS_TEXT); //set input type to text
+  passwordField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD); //set input type to text
   passwordField.setImeOptions(EditorInfo.IME_ACTION_DONE);
   passwordField.setCloseImeOnDone(true);
 
@@ -126,6 +127,7 @@ void setup()
   userName = "";
   passWord = "";
   failPass = "";
+  registerSucess = "";
 
   //init threading
   tt = new ThreadThing(this);
@@ -141,6 +143,7 @@ void draw()
 
     fill(255);
     textSize(25);
+    text(registerSucess, 10, 30);
     text(failPass, 10, 30);
   }
   else
@@ -244,7 +247,7 @@ void oscEvent(OscMessage theOscMessage)
 
   if (theOscMessage.addrPattern().equals("Authenticated"))
   {
-    println("Server msg received");
+    registerSucess = "Registration Successful";
     enteringInfo = false;
   }
   else if (theOscMessage.addrPattern().equals("Incorrect Password"))
