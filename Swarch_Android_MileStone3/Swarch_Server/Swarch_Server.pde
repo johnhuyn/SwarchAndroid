@@ -3,63 +3,82 @@
 // Anthony So
 // ICS 168 Swarch on Androi - Java Server
 
-//Swarch Server - send and rceieves player information
+/*
+ * OscP5 and NetP5 Protocols used to setup the server
+ * @NetAddressList - stores players IP
+ */
 import oscP5.*;
 import netP5.*;
 OscP5 oscP5;
 NetAddressList myNetAddressList = new NetAddressList();
 
-//SQLite DB
+/*
+ * SQLite DB
+ * Uses BezierSQLib for Processing
+ */
 import java.sql.*;
 import de.bezier.data.sql.*;
 SQLite db;
 
-// listeningPort is the port the server is listening for incoming messages
+/*
+ * @int myListeningPort - set server incoming message port to 32000
+ */
 int myListeningPort = 32000;
-// the broadcast port is the port the clients should listen for incoming messages from the server
-//int myBroadcastPort = 12000;
 
-//Used to check messages being sent and for the event 
-// checker to identify what is going on.
-//* Use this to check message for collison, username, and etc in the future
+
+/*
+ * @String myConnectPattern - Message server look for from client to connect
+ * @String myDisconnectPattern - Message server look for from client to disconnect
+ */
 String myConnectPattern = "Connecting...";
 String myDisconnectPattern = "Disconnecting...";
 
-//Variable used to store userName/passWord sent from Client
-//Use this to insert/compare to the database
+/*
+ * @String userName - string variable that store userName from db.getString()
+ * @String passWord - string variable that stores password from db.getString()
+ */
 String userName;
 String passWord;
 
 
 void setup() 
 {
-  //networking set in tcp mode
+  /*
+   * Creates a new oscP5 Instance using myListening Port
+   * and is in TCP mode
+   */
   oscP5 = new OscP5(this, myListeningPort, OscP5.TCP);
   frameRate(60);
 
-  //Database
+  /*
+   * Creates a instance of SQLite that opens
+   * an account database file which currently
+   * holds a table "table1" and "player" 
+   * and "password" columns
+   */
   db = new SQLite(this, "account.db"); //opens the account database file
 
   if (db.connect())
   {
-    //insert player test
+
+    //Example of how to insert into table
     //db.query(" insert into table1 values ('anthony', '123')");
 
-    //deleting players example
+    //How to delete the entire table1
     //db.query("delete from table1");
 
     //list table names
-    /*db.query( "SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"" );
-     
-     while (db.next ())
-     {
-     println( db.getString("Name") );
-     }*/
+    db.query( "SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"" );
+
+    while (db.next ())
+    {
+      println(db.getString("Name") );
+    }
 
     //read from "table1"
     db.query( "SELECT * FROM table1" );
-    //print("Username: " + db.getString("Player") + " Password: " + db.getString("Password"));
 
+    //print out user and password in the database when server starts up.
     while (db.next ())
     {
       print("Username: " + db.getString("Player") + " Password: " + db.getString("Password"));
@@ -76,7 +95,7 @@ void draw()
 void oscEvent(OscMessage theOscMessage)
 {
 
-  /* check if the address pattern fits any of our patterns */
+  /* Check to see if client messages fits any of the server patterns */
   if (theOscMessage.addrPattern().equals(myConnectPattern)) 
   {
     connect(theOscMessage.netAddress().address());
@@ -90,18 +109,23 @@ void oscEvent(OscMessage theOscMessage)
   //check that if incoming message is not blank run the code inside
   else if (!theOscMessage.get(0).stringValue().equals(""))
   {
-    //simple solution is to prevent duplicate entries.
-    //added unique player column
     if (db.connect())
     {
-      //Look for userName in Player
+      //Look for userName in Player and store it in userName
       db.query("SELECT * FROM table1 where player = '" +theOscMessage.get(0).stringValue() +"'");
       userName = db.getString("Player");
+      //Query for a player and password that matches in both columns and store in passWord
       db.query("SELECT * FROM table1 where player = '" +theOscMessage.get(0).stringValue() +"' and password = '" + theOscMessage.get(1).stringValue() + "'");
       passWord = db.getString("Password");
       println(userName + " " + passWord);
-
-      if (userName == null) //If the message matches than it return true
+      
+      /*
+       * if Player doesn't exist in the database
+       * print out a comment to console giving current state
+       * Insert into table the current userName/Password from client
+       * Send to client a Successful registration and start the game
+       */
+     if (userName == null) 
       {
         println("Player is not in the database yet");
         //add player
@@ -110,6 +134,12 @@ void oscEvent(OscMessage theOscMessage)
         OscMessage m2 = new OscMessage("Authenticated");
         oscP5.send(m2, theOscMessage.tcpConnection());
       }
+      /*
+       * if both userName and Password are correct
+       * print to console giving current state
+       * then the player exist in the database that matches the criteria
+       * authenticate the player and continue on to the game
+       */
       else if (userName != null && passWord != null)
       {
         println("Player Exist and Password Match");
@@ -117,6 +147,12 @@ void oscEvent(OscMessage theOscMessage)
         OscMessage m2 = new OscMessage("Authenticated");
         oscP5.send(m2, theOscMessage.tcpConnection());
       }
+      /*
+       * If player exist but the incorrect password is given
+       * print to console giving current state
+       * send to client that an incorrect password was given
+       * client will handle a try again password field
+       */
       else if (userName != null && passWord == null)
       {
         println("Player Exist, but Password Doesn't Match");
@@ -141,7 +177,11 @@ void oscEvent(OscMessage theOscMessage)
 }
 
 
-//connects player to server and store them in IP address list
+/*
+ * Handles new players connecting
+ * If player isn't in the player ip address list
+ * they are added. Otherwise they are connected.
+ */
 private void connect(String theIPaddress) 
 {
   if (!myNetAddressList.contains(theIPaddress, myListeningPort)) 
@@ -157,7 +197,7 @@ private void connect(String theIPaddress)
 }
 
 
-//finish implementing latter
+/*
 private void disconnect(String theIPaddress) 
 {
   if (myNetAddressList.contains(theIPaddress, myListeningPort)) 
@@ -170,5 +210,5 @@ private void disconnect(String theIPaddress)
     println("### "+theIPaddress+" is not connected.");
   }
   println("### currently there are "+myNetAddressList.list().size());
-}
+}*/
 
