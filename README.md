@@ -4,6 +4,20 @@ Milestone 2: COMPLETED
 
 Milestone 3: COMPLETED
 
-**Bonus: Disconnect is already implemented into server currently just need to use the OnPause class to disconnect when leaving the game will also add a keystroke D that will disconnect**
+Milestone 4: IN PROGRESS
+
+** Have at least 3 client playable **
+
+** Player Collision **
+
+** Win/Lost Condition **
+
+** Avoid Problem from Milestone 1 Example **
+
+** Bonus: Finish Scoreboard Pellet = +1 Player = +10 **
+
+** Bonus: Client disconnect + remove from scoreboard **
+
+** Bonus: Push score to website **
 
 =============
