@@ -6,7 +6,7 @@ Milestone 3: COMPLETED
 
 Milestone 4: IN PROGRESS
 
-** Have at least 3 client playable **
+**Have at least 3 client playable**
 
 ** Player Collision **
 
