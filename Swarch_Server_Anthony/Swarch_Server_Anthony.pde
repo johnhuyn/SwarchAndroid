@@ -19,7 +19,10 @@ boolean foodMax;
 float[] xCoord;
 float[] yCoord;
 float displayw, displayh;
-
+boolean started;
+float x, y;
+int dir;
+int m;
 //amount of players playing
 int players = 0;
 /*
@@ -45,7 +48,10 @@ String passWord;
 
 void setup() 
 {
+  started = false;
+  dir = 0;
   food = 0;
+
   //initalize array to hold their x, y coord
   xCoord = new float[4];
   yCoord = new float[4];
@@ -54,7 +60,7 @@ void setup()
    * and is in TCP mode
    */
   oscP5 = new OscP5(this, myListeningPort, OscP5.TCP);
-  frameRate(60);
+  frameRate(45);
   datab = new Database(this);
 
   datab.connect();
@@ -62,7 +68,20 @@ void setup()
 
 void draw() 
 {
+  m = second();
   background(0);
+  unitCollison();
+  trackMovement();
+  unitCollison();
+  if((m % 3) == 0)
+  {
+    OscMessage m = new OscMessage("Update Position");
+    m.add(x);
+    m.add(y);
+    oscP5.send(m);
+    println("resent position");
+  }
+
 }
 
 
@@ -77,6 +96,53 @@ void generateFood()
   }
 }
 
+void unitCollison()
+{
+  int pOneCenter = (int)(25/3); // makes sure the bounds are updated before checking for collision.
+  if (started)
+  {
+    for (int i = 0; i < 4; ++i)
+    {
+      if ((x  > xCoord[i]/2 - pOneCenter - 2 && x < xCoord[i]/2 + pOneCenter + 2) 
+        && (y  > yCoord[i]/2 - pOneCenter - 2 && y  < yCoord[i]/2 + pOneCenter + 2))
+      {
+        //food = createShape(RECT, 0, 0, 10, 10);
+        //food.setFill(color(255, 0, 0));
+        //xCoord[i] = random(15, displayWidth - 70);
+        //yCoord[i] = random(15, displayHeight - 60);
+        //myFood[i] = food;
+        println("hit! " + " xCoord[i]: " + xCoord[i] + " yCoord[i]: "+ yCoord[i]);
+      }
+    }
+  }
+}
+
+//server is keeping track of where the player should be
+void trackMovement()
+{
+  if(started)
+  {
+    switch (dir)
+    {
+      case 1:
+        x -= .45;
+        break;
+      case -1:
+        x += .45;
+        break;
+      case 2:
+        y += .45;
+        break;
+      case -2:
+        y -= .45;
+        break;
+      default:
+        break;
+    }
+    //println("the x position: " + x);
+    //println("the y position: " + y);
+  }
+}
 
 void oscEvent(OscMessage theOscMessage)
 {
@@ -90,6 +156,12 @@ void oscEvent(OscMessage theOscMessage)
     OscMessage m = new OscMessage("Connection Successful!");
     //This sends the above message to all clients connected.
     oscP5.send(m, theOscMessage.tcpConnection());
+  }
+  //if the player changes directions, recieve the new direction to keep track of where 
+  //the piece is moving for collision purposes
+  else if(theOscMessage.addrPattern().equals("Changing Directions"))
+  {
+    dir = theOscMessage.get(0).intValue();
   }
   //handles user registration
   //check that if incoming message is not blank run the code inside
@@ -139,13 +211,16 @@ void oscEvent(OscMessage theOscMessage)
             displayh = theOscMessage.get(3).intValue();
           }
           generateFood();
+        x = 179.0;
+        y = 121.0;
           //authenticate player
           OscMessage m2 = new OscMessage("Authenticated");
           m2.add(xCoord[0]); m2.add(xCoord[1]); m2.add(xCoord[2]); m2.add(xCoord[3]);
           m2.add(yCoord[0]);m2.add(yCoord[1]);m2.add(yCoord[2]);m2.add(yCoord[3]);
+          m2.add(x); m2.add(y);
           oscP5.send(m2, theOscMessage.tcpConnection());
           players++;
-          
+          started = true;
         }
       }
       /*
