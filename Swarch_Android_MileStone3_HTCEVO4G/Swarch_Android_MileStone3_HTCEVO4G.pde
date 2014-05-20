@@ -42,11 +42,13 @@ PImage login;
 String userName;
 String passWord;
 String failPass;
-String ip = "174.77.35.85";
+String ip = "169.234.87.160";
 //global variables
 boolean enteringInfo;
 int wScale1, hScale1,  hScale2;
 boolean ate;
+int dir;
+
 //Shape
 PShape square;
 PShape food;
@@ -106,8 +108,8 @@ void setup()
   enteringInfo = true;
 
   //start a player at a random location
-  x = random(15, displayWidth - 70);
-  y = random(15, displayHeight - 60);
+ // x = random(15, displayWidth - 70);
+ // y = random(15, displayHeight - 60);
 
   playerOne = new Player();
   pOneCenter = (int)(25 + playerOne.size*10)/3;
@@ -159,6 +161,8 @@ void draw()
     // playerUnit();
     playerOne.run();
     
+    checkPosition();
+    
     if(ate)
       generateFood();
     //place food around the board
@@ -166,9 +170,24 @@ void draw()
     {
       shape(myFood[i], xCoord[i], yCoord[i]);
     }
-
+    
+    checkPosition();
+    //println("the x position: " + playerOne.getX());
+    //println("the y position: " + playerOne.getY());
     //unit collison.
     //unitCollison();
+  }
+}
+
+void checkPosition()
+{
+  if(playerOne.direction() != dir)
+  {
+    dir = playerOne.direction();
+    OscMessage m4;
+    m4 = new OscMessage("Changing Directions");
+    m4.add(dir);
+    oscP5.send(m4);
   }
 }
 
@@ -179,7 +198,9 @@ void generateFood()
       food = createShape(RECT, 0, 0, 10, 10);
       food.setFill(color(255, 0, 0));
       myFood[i] = food;
+      println("food" + i + ": " + xCoord[i] + "  " + yCoord[i]);
    }
+   
    ate = false;
 }
 
@@ -238,6 +259,10 @@ void oscEvent(OscMessage theOscMessage)
     {
       yCoord[j] = theOscMessage.get(j+4).floatValue();
     }
+    x = theOscMessage.get(8).floatValue();
+    y = theOscMessage.get(9).floatValue();
+    playerOne.setX(x);
+    playerOne.setY(y);
     enteringInfo = false;
   }
   else if (theOscMessage.addrPattern().equals("Incorrect Password"))
@@ -246,6 +271,12 @@ void oscEvent(OscMessage theOscMessage)
     enteringInfo = true;
     widgetContainer.addWidget(nameField);
     widgetContainer.addWidget(passwordField);
+  }
+  else if(theOscMessage.addrPattern().equals("Update Position"))
+  {
+      x = theOscMessage.get(0).floatValue();
+      y = theOscMessage.get(1).floatValue(); 
+      println("got new position");
   }
 }
 

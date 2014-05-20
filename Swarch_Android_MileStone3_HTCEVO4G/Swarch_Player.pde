@@ -9,7 +9,8 @@ public class Player
 {
   
   float x, y, xVelo, yVelo, size;
-   
+  int dir;
+  
   public Player()
   {
       y = displayWidth/2;
@@ -19,8 +20,31 @@ public class Player
       size = 0;
   }
   
-  void move()
+  int direction()
+  { 
+    return dir;
+  }
+  float getX()
   {
+    return x;
+  }
+  float getY()
+  {
+    return y;
+  }
+  
+  void setX(float xpos)
+  {
+    x = xpos;
+  }
+  
+  void setY(float ypos)
+  {
+    y = ypos;
+  }
+  
+  void move()
+  {  
     if(accelData != null)
     {
       xVelo = accelData[1];
@@ -34,10 +58,12 @@ public class Player
            if(xVelo < 1)
            {
              x -= 1 * (1 - size/20);
+             dir = 1; //moving left
            }
            else
            {
              x+= 1 * (1 - size/20);
+             dir = -1; //moving right
            }
          }
          else
@@ -45,10 +71,14 @@ public class Player
            if(xVelo < 1)
            {
              x -= 1;
+             dir = 1; // moving left
+            // println("moving left");
            }
            else
            {
              x += 1;
+             dir = -1; // moving right
+            // println("moving right");
            }
          }
        }
@@ -59,10 +89,12 @@ public class Player
            if(yVelo < 1)
            {
              y -= 1 * (1 - size/20);
+             dir = -2;//moving up
            }
            else
            {
              y += 1 * (1 - size/20);
+             dir = 2;//moving down
            }
          }
          else
@@ -70,15 +102,22 @@ public class Player
            if(yVelo < 1)
            {
              y -= 1;
+             dir = -2;//moving up
+             //println("moving up");
            }
            else
            {
              y += 1;
+             dir = 2;//moving down
+             //println("moving down");
            }
          }
        }
          
-}
+  }
+  
+  
+  
   
   void display()
   {
@@ -91,7 +130,7 @@ public class Player
 //    For Testing purposes:
 //       player is able to move to edge; landing on the other side of the screen
 //     -** Need to change later so that player dies; when hits edge.
-   void edges()
+/*   void edges()
    {
     if (x - (10) > displayHeight - 140) 
     {
@@ -118,10 +157,10 @@ public class Player
         size = 0;
     }
   }
-  
+  */
   void run()
   {
-    edges();
+    //edges();
     move();
     display();
   }
