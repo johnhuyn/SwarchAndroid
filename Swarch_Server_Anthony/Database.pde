@@ -10,7 +10,7 @@ SQLite db;
 public class Database
 { 
 
-  public Database(Swarch_Server ss)
+  public Database(Swarch_Server_Anthony ss)
   {
       /*
        * Creates a instance of SQLite that opens
