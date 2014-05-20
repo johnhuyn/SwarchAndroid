@@ -42,11 +42,11 @@ PImage login;
 String userName;
 String passWord;
 String failPass;
-String ip = "169.234.57.216";
+String ip = "174.77.35.85";
 //global variables
 boolean enteringInfo;
 int wScale1, hScale1,  hScale2;
-
+boolean ate;
 //Shape
 PShape square;
 PShape food;
@@ -76,7 +76,7 @@ void setup()
   wScale1 = ((displayWidth/2) - 85)*(1+(displayWidth/1920));
   hScale1 = ((displayHeight/2) - 85)*(1+(displayHeight/1080));
   hScale2 = ((displayHeight/2) - 35)*(1+(displayHeight/1080));
-
+  ate = true;
   //initalize the container
   widgetContainer = new APWidgetContainer(this); //create new container for widgets
 
@@ -159,7 +159,8 @@ void draw()
     // playerUnit();
     playerOne.run();
     
-    generateFood();
+    if(ate)
+      generateFood();
     //place food around the board
     for (int i = 0; i < 4; i++)
     {
@@ -179,6 +180,7 @@ void generateFood()
       food.setFill(color(255, 0, 0));
       myFood[i] = food;
    }
+   ate = false;
 }
 
 //When setCloseImeOnDone is finished it will call this which will close down the login screen
@@ -206,7 +208,8 @@ void displayUsername()
 void unitCollison()
 {
   pOneCenter = (int)(25 + playerOne.size*10)/3; // makes sure the bounds are updated before checking for collision.
-
+  playerOne.size = playerOne.size + 1;
+  
   for (int i = 0; i < 4; ++i)
   {
     if ((playerOne.x  > xCoord[i]/2 - pOneCenter - 2 && playerOne.x < xCoord[i]/2 + pOneCenter + 2) 
@@ -218,8 +221,6 @@ void unitCollison()
       yCoord[i] = random(15, displayHeight - 60);
       myFood[i] = food;
       print("hit! " + " xCoord[i]: " + xCoord[i] + " yCoord[i]: "+ yCoord[i]);
-
-      playerOne.size = playerOne.size + 1;
     }
   }
 }
@@ -229,14 +230,14 @@ void oscEvent(OscMessage theOscMessage)
 {
   if (theOscMessage.addrPattern().equals("Authenticated"))
   {
-    xCoord[0] = theOscMessage.get(0).floatValue();
-    xCoord[1] = theOscMessage.get(1).floatValue();
-    xCoord[2] = theOscMessage.get(2).floatValue();
-    xCoord[3] = theOscMessage.get(3).floatValue();
-    yCoord[0] = theOscMessage.get(4).floatValue();
-    yCoord[1] = theOscMessage.get(5).floatValue();
-    yCoord[2] = theOscMessage.get(6).floatValue();
-    yCoord[3] = theOscMessage.get(7).floatValue();
+    for(int i = 0; i < 4; i++)
+    {
+      xCoord[i] = theOscMessage.get(i).floatValue();
+    }
+    for(int j = 0; j < 4; j++)
+    {
+      yCoord[j] = theOscMessage.get(j+4).floatValue();
+    }
     enteringInfo = false;
   }
   else if (theOscMessage.addrPattern().equals("Incorrect Password"))
